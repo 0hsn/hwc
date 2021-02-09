@@ -1,5 +1,5 @@
 [package]
-name = "wcn"
+name = "hwc"
 version = "0.1.0"
 authors = ["HSN <hasanlock@gmail.com>"]
 edition = "2018"
@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 clap="2.33.3"
+words-count="0.1.1"

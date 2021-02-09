@@ -51,6 +51,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "hwc"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "words-count",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.84"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -72,6 +80,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "unicode-blocks"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "542ea96984462344d86867923bc47e107f5b2b1a4c2636617b00d3bffb6b3947"
+
+[[package]]
 name = "unicode-width"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -82,13 +96,6 @@ name = "vec_map"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
-
-[[package]]
-name = "wcn"
-version = "0.1.0"
-dependencies = [
- "clap",
-]
 
 [[package]]
 name = "winapi"
@@ -111,3 +118,12 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "words-count"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de0f5c8bb6dfc5936716cf92e70d0748169cfae253a50cb7fd8e4370d69c15a2"
+dependencies = [
+ "unicode-blocks",
+]

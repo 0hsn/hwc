@@ -1,9 +1,31 @@
 use clap::ArgMatches;
 use std::fs::File;
 use std::io::Read;
-use Default;
+use words_count;
+use std::collections::HashMap;
+use std::fmt;
 
-#[derive(Debug)]
+pub struct ArgDefinition {
+    pub byte: (char, &'static str, &'static str),
+    pub char: (char, &'static str, &'static str),
+    pub line: (char, &'static str, &'static str),
+    pub word: (char, &'static str, &'static str),
+    pub file: (char, &'static str, &'static str),
+}
+
+impl Default for ArgDefinition {
+    fn default() -> Self {
+        Self {
+            byte: ('b', "byte", "Prints number of bytes"),
+            char: ('c', "char", "Prints number of characters"),
+            line: ('l', "line", "Prints number of lines"),
+            word: ('w', "word", "Prints number of words"),
+            file: ('_', "FILE", "Filename to check from"),
+        }
+    }
+}
+
+#[derive(Eq, PartialEq, Hash)]
 enum CounterType {
     Byte,
     Char,
@@ -11,45 +33,66 @@ enum CounterType {
     Word,
 }
 
-#[derive(Debug)]
-enum CounterResult {
-    Byte(u32),
-    Char(u32),
-    Line(u32),
-    Word(u32),
+pub struct CounterResult {
+    values: HashMap<CounterType, u32>
 }
 
-impl Default for CounterResult {
-    fn default() -> Self {
-        Self(0u32)
+impl fmt::Display for CounterResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut result_str = String::new();
+
+        for (counter_type, count) in &self.values {
+            if !result_str.is_empty() {
+                result_str.push(',');
+            }
+
+            match counter_type {
+                CounterType::Byte => result_str.push_str("b:"),
+                CounterType::Char => result_str.push_str("c:"),
+                CounterType::Line => result_str.push_str("l:"),
+                CounterType::Word => result_str.push_str("w:"),
+            }
+
+            result_str.push_str(count.to_string().as_str());
+        }
+
+        write!(f, "{}", result_str)
     }
 }
 
-#[derive(Debug)]
 pub struct CounterOps {
     types: Vec<CounterType>,
     filepath: String,
 }
 
 impl CounterOps {
-    pub fn from_clap_arg_matches(matches: &ArgMatches) -> Self {
+    pub fn from_clap_arg_matches(matches: &ArgMatches, arg_def: &ArgDefinition) -> Self {
         let mut types: Vec<CounterType> = Vec::new();
         let filepath = matches.value_of("FILE").unwrap().into();
 
-        if matches.is_present("byte") {
+        if matches.is_present(arg_def.byte.1) {
             types.push(CounterType::Byte);
         }
 
-        if matches.is_present("char") {
+        if matches.is_present(arg_def.char.1) {
             types.push(CounterType::Char);
         }
 
-        if matches.is_present("line") {
+        if matches.is_present(arg_def.line.1) {
             types.push(CounterType::Line);
         }
 
-        if matches.is_present("word") {
+        if matches.is_present(arg_def.word.1) {
             types.push(CounterType::Word);
+        }
+
+        if types.is_empty() {
+            types = vec![
+                CounterType::Byte,
+                CounterType::Char,
+                CounterType::Line,
+                CounterType::Word
+            ];
         }
 
         Self {
@@ -58,48 +101,50 @@ impl CounterOps {
         }
     }
 
-    pub fn display(&self) {
-        self.calc();
-        println!("{:#?}", self);
-    }
+    pub fn calculate(&self) -> CounterResult {
+        // helper functions
+        fn get_byte_count(buffer: &str) -> u32 {
+            buffer.as_bytes().len() as u32
+        }
 
-    fn calc(&self) {
+        fn get_char_count(buffer: &str) -> u32 {
+            buffer.trim().chars().count() as u32
+        }
+
+        fn get_line_count(buffer: &str) -> u32 {
+            buffer.lines().count() as u32
+        }
+
+        fn get_word_count(buffer: &str) -> u32 {
+            words_count::count(buffer).words as u32
+        }
+
+        // driver
         let mut file = File::open(self.filepath.as_str()).unwrap();
         let mut buffer = String::new();
 
         file.read_to_string(&mut buffer).unwrap();
+        let mut values =  HashMap::new();
 
         for item in &self.types {
             match item {
-                CounterType::Byte => {
-                    println!("bytes: {}", self.get_byte_count(&buffer));
-                },
-                CounterType::Char => {
-                    println!("characters: {}", self.get_char_count(&buffer));
-                },
-                CounterType::Line => {
-                    println!("lines: {}", self.get_line_count(&buffer));
-                },
-                CounterType::Word => {
-                    // println!("words: {}", self.get_word_count(&buffer));
-                },
-            }
+                CounterType::Byte => values.insert(
+                    CounterType::Byte, get_byte_count(&buffer)
+                ),
+                CounterType::Char => values.insert(
+                    CounterType::Char, get_char_count(&buffer)
+                ),
+                CounterType::Line => values.insert(
+                    CounterType::Line, get_line_count(&buffer)
+                ),
+                CounterType::Word => values.insert(
+                    CounterType::Word, get_word_count(&buffer)
+                ),
+            };
         }
-    }
 
-    fn get_byte_count(buffer: &String) -> u32 {
-        buffer.as_bytes().len() as u32
-    }
-
-    fn get_char_count(buffer: &String) -> u32 {
-        buffer.trim().chars().count() as u32
-    }
-
-    fn get_line_count(buffer: &String) -> u32 {
-        buffer.lines().count() as u32
-    }
-
-    fn get_word_count(buffer: &String) -> u32 {
-        2
+        CounterResult {
+            values
+        }
     }
 }
