@@ -1,7 +1,6 @@
 use clap::ArgMatches;
 use std::fs::File;
 use std::io::Read;
-use words_count;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -102,43 +101,42 @@ impl CounterOps {
     }
 
     pub fn calculate(&self) -> CounterResult {
-        // helper functions
-        fn get_byte_count(buffer: &str) -> u32 {
-            buffer.as_bytes().len() as u32
-        }
-
-        fn get_char_count(buffer: &str) -> u32 {
-            buffer.trim().chars().count() as u32
-        }
-
-        fn get_line_count(buffer: &str) -> u32 {
-            buffer.lines().count() as u32
-        }
-
-        fn get_word_count(buffer: &str) -> u32 {
-            words_count::count(buffer).words as u32
-        }
-
-        // driver
         let mut file = File::open(self.filepath.as_str()).unwrap();
-        let mut buffer = String::new();
-
-        file.read_to_string(&mut buffer).unwrap();
         let mut values =  HashMap::new();
+
+        let mut buffer = String::new();
+        file.read_to_string(&mut buffer).unwrap();
+
+
+        let get_byte_count = |buf: &str| {
+            buf.as_bytes().len() as u32
+        };
+
+        let get_char_count = |buf: &str| {
+            buf.trim().chars().count() as u32
+        };
+
+        let get_line_count = |buf: &str| {
+            buf.lines().count() as u32
+        };
+
+        let get_word_count = |buf: &str| {
+            words_count::count(buf).words as u32
+        };
 
         for item in &self.types {
             match item {
                 CounterType::Byte => values.insert(
-                    CounterType::Byte, get_byte_count(&buffer)
+                    CounterType::Byte, get_byte_count(&buffer[..])
                 ),
                 CounterType::Char => values.insert(
-                    CounterType::Char, get_char_count(&buffer)
+                    CounterType::Char, get_char_count(&buffer[..])
                 ),
                 CounterType::Line => values.insert(
-                    CounterType::Line, get_line_count(&buffer)
+                    CounterType::Line, get_line_count(&buffer[..])
                 ),
                 CounterType::Word => values.insert(
-                    CounterType::Word, get_word_count(&buffer)
+                    CounterType::Word, get_word_count(&buffer[..])
                 ),
             };
         }
