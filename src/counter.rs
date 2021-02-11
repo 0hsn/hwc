@@ -107,36 +107,35 @@ impl CounterOps {
         let mut buffer = String::new();
         file.read_to_string(&mut buffer).unwrap();
 
-
-        let get_byte_count = |buf: &str| {
-            buf.as_bytes().len() as u32
+        let get_byte_count = || {
+            buffer.as_bytes().len() as u32
         };
 
-        let get_char_count = |buf: &str| {
-            buf.trim().chars().count() as u32
+        let get_char_count = || {
+            buffer.trim().chars().count() as u32
         };
 
-        let get_line_count = |buf: &str| {
-            buf.lines().count() as u32
+        let get_line_count = || {
+            buffer.lines().count() as u32
         };
 
-        let get_word_count = |buf: &str| {
-            words_count::count(buf).words as u32
+        let get_word_count = || {
+            words_count::count(&buffer).words as u32
         };
 
         for item in &self.types {
             match item {
                 CounterType::Byte => values.insert(
-                    CounterType::Byte, get_byte_count(&buffer[..])
+                    CounterType::Byte, get_byte_count()
                 ),
                 CounterType::Char => values.insert(
-                    CounterType::Char, get_char_count(&buffer[..])
+                    CounterType::Char, get_char_count()
                 ),
                 CounterType::Line => values.insert(
-                    CounterType::Line, get_line_count(&buffer[..])
+                    CounterType::Line, get_line_count()
                 ),
                 CounterType::Word => values.insert(
-                    CounterType::Word, get_word_count(&buffer[..])
+                    CounterType::Word, get_word_count()
                 ),
             };
         }
